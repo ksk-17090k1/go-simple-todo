@@ -10,8 +10,8 @@
 
 Go の `net/http` は、ハンドラを単体テストするための道具が **標準で** 揃っています。
 
-- `httptest.NewRequest(method, target, body)` … リクエストを組み立てる
-- `httptest.NewRecorder()` … `ResponseWriter` を実装した、記憶する箱
+- [`httptest.NewRequest(method, target, body)`](https://pkg.go.dev/net/http/httptest#NewRequest) … リクエストを組み立てる
+- [`httptest.NewRecorder()`](https://pkg.go.dev/net/http/httptest#NewRecorder) … `ResponseWriter` を実装した、記憶する箱
 
 この 2 つがあれば、**サーバを立ち上げずに** ハンドラを呼べます。
 「フレームワーク特有のテスト補助 API」に頼らず、標準ライブラリだけで完結する。ここが Go の強みです。
@@ -62,7 +62,7 @@ func do(mux *http.ServeMux, method, path, body string) *httptest.ResponseRecorde
 
 ### ポイント
 
-- **`slog.NewJSONHandler(io.Discard, nil)`**: テスト中のログを捨てる。テスト実行時の出力を汚さない。
+- **`slog.NewJSONHandler(io.Discard, nil)`**: テスト中のログを捨てる（[`io.Discard`](https://pkg.go.dev/io#Discard) は書き捨て先の `io.Writer`）。テスト実行時の出力を汚さない。
 - **`newTestMux` は Store を返す**: テストが直接 Store にデータを積みたいときに使う（HTTP 経由で Create するより速い・失敗ポイントを減らせる）。
 - **`do` ヘルパー**: リクエスト組み立てのボイラープレートを 1 箇所に集約。
 
@@ -107,7 +107,7 @@ func TestCreateTodo(t *testing.T) {
 ### テーブル駆動のうまみ
 
 - ケースを **1 個の struct スライス** で列挙 → 追加が「行を足す」だけになる
-- `t.Run(name, func)` で **サブテスト化** → 失敗時にどのケースかがすぐ分かる
+- [`t.Run(name, func)`](https://pkg.go.dev/testing#T.Run) で **サブテスト化** → 失敗時にどのケースかがすぐ分かる
 - 「異常系を体系的に潰す」網目が張れる
 
 ## 10.4 Get: 正常・404・パス不正
@@ -276,11 +276,11 @@ go test -cover ./...
 
 ## 10.10 これ以上のテスト（本編では扱わない）
 
-- **`httptest.NewServer`** … 本物の TCP リッスンを立てて **クライアント側からも** 叩けるようにする。
+- **[`httptest.NewServer`](https://pkg.go.dev/net/http/httptest#NewServer)** … 本物の TCP リッスンを立てて **クライアント側からも** 叩けるようにする。
   今回はミドルウェア込みで走らせても値打ちが薄いので割愛（ミドルウェアも `mux.ServeHTTP` で通る）。
   ネットワーク越しに叩きたい場合（TLS を含めるなど）に使うと便利。
-- **並行テスト** … `t.Parallel()` で並列化。今回のように状態を持つ Store をテスト間で共有していない場合は素直に入れられる。
-- **fuzzing** (`go test -fuzz=Fuzz`) … JSON パーサ周りの境界値を自動探索。入門としては別トピック。
+- **並行テスト** … [`t.Parallel()`](https://pkg.go.dev/testing#T.Parallel) で並列化。今回のように状態を持つ Store をテスト間で共有していない場合は素直に入れられる。
+- **[fuzzing](https://pkg.go.dev/testing#hdr-Fuzzing)** (`go test -fuzz=Fuzz`) … JSON パーサ周りの境界値を自動探索。入門としては別トピック。
 
 ## 次の章
 

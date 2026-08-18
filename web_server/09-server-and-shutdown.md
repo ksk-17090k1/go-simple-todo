@@ -9,7 +9,7 @@
 
 ## 9.1 なぜ `http.ListenAndServe` では不足なのか
 
-これまで書いてきた `http.ListenAndServe(":8080", mux)` は内部で `http.Server` を作りますが、**すべてゼロ値**です。
+これまで書いてきた `http.ListenAndServe(":8080", mux)` は内部で [`http.Server`](https://pkg.go.dev/net/http#Server) を作りますが、**すべてゼロ値**です。
 つまり:
 
 - 読み書きの **タイムアウトなし** → slow-loris 攻撃・切れかけコネクションでリソース枯渇
@@ -52,11 +52,11 @@ slog.SetDefault(logger)
 
 ### 何が起きるか
 
-- **`NewJSONHandler`** … 1 ログ = 1 行 JSON。ログ収集基盤（Datadog, Cloud Logging, Loki, ELK など）と相性がよい。
+- **[`NewJSONHandler`](https://pkg.go.dev/log/slog#NewJSONHandler)** … 1 ログ = 1 行 JSON。ログ収集基盤（Datadog, Cloud Logging, Loki, ELK など）と相性がよい。
 - **`os.Stdout`** に出す … 12-Factor App の「ログはイベントストリーム、出力先はプロセスの外」の原則に従う。
   ファイル書き出しはやらない（コンテナ環境では特に）。
 - **`Level: slog.LevelInfo`** … Debug は落として Info 以上を出す。開発時は `LevelDebug` にする。
-- **`slog.SetDefault(logger)`** … デフォルトの `slog.Info(...)` 等もこの logger 経由になる。他パッケージから `slog.Error("msg")` と書かれても同じ出力先に流れる。
+- **[`slog.SetDefault(logger)`](https://pkg.go.dev/log/slog#SetDefault)** … デフォルトの `slog.Info(...)` 等もこの logger 経由になる。他パッケージから `slog.Error("msg")` と書かれても同じ出力先に流れる。
 
 ### `log`（従来）との違い
 
@@ -71,10 +71,10 @@ slog.SetDefault(logger)
 そこで次の手順を踏みます。
 
 1. `SIGTERM`（コンテナランタイムからの停止指示）または `SIGINT`（Ctrl-C）を捕まえる
-2. `srv.Shutdown(ctx)` を呼ぶ ─ 新規接続の受け入れを停止し、進行中のハンドラの終了を待つ
+2. [`srv.Shutdown(ctx)`](https://pkg.go.dev/net/http#Server.Shutdown) を呼ぶ ─ 新規接続の受け入れを停止し、進行中のハンドラの終了を待つ
 3. `ctx` にタイムアウトを付けておき、いつまでも待たないようにする
 
-`signal.NotifyContext` を使うと 1 の受信を **context のキャンセルとして** 受け取れます。
+[`signal.NotifyContext`](https://pkg.go.dev/os/signal#NotifyContext) を使うと 1 の受信を **context のキャンセルとして** 受け取れます。
 
 ```go
 ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -194,7 +194,7 @@ func run() error {
 
 ### `errors.Is(err, http.ErrServerClosed)`
 
-`Server.Shutdown` を呼ぶと、動いている `ListenAndServe` が **`http.ErrServerClosed`** を返します。
+`Server.Shutdown` を呼ぶと、動いている `ListenAndServe` が **[`http.ErrServerClosed`](https://pkg.go.dev/net/http#ErrServerClosed)** を返します。
 これは正常終了の合図なので、エラーとして扱ってはいけません。**`errors.Is` で判定** します。
 
 ### なぜ `select` で 2 系統を待つのか
@@ -209,13 +209,13 @@ func run() error {
 
 ### `signal.NotifyContext` は何をやっているか
 
-- `signal.Notify(chan, ...)` の context 版
+- [`signal.Notify(chan, ...)`](https://pkg.go.dev/os/signal#Notify) の context 版
 - 内部で「シグナルを受けたら context をキャンセル」してくれる
 - `defer stop()` を必ず入れる（プロセス内で複数箇所からシグナルを扱う場合の綺麗な後始末）
 
 ### shutdown のタイムアウト
 
-`context.WithTimeout(..., 10*time.Second)` は「進行中のリクエストを 10 秒だけ待つ」の意味です。
+[`context.WithTimeout(..., 10*time.Second)`](https://pkg.go.dev/context#WithTimeout) は「進行中のリクエストを 10 秒だけ待つ」の意味です。
 それを超えると `Shutdown` は `context.DeadlineExceeded` を返し、まだ処理中の接続は強制切断されます。
 本番では **k8s の terminationGracePeriodSeconds よりわずかに短い** 値にするのが定石（例: k8s が 30s なら 25s）。
 

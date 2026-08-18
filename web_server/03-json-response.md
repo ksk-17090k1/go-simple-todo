@@ -2,7 +2,7 @@
 
 ## この章のゴール
 
-- `encoding/json` で構造体を JSON に変換する
+- [`encoding/json`](https://pkg.go.dev/encoding/json) で構造体を JSON に変換する
 - 正しい `Content-Type` とステータスコードを返す
 - **エラーレスポンスの形式** を最初に決める
 - あちこちで再利用する `writeJSON` / `writeError` ヘルパーを作る
@@ -74,7 +74,7 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 }
 ```
 
-### `Marshal` vs `NewEncoder(w).Encode`
+### [`Marshal`](https://pkg.go.dev/encoding/json#Marshal) vs [`NewEncoder(w).Encode`](https://pkg.go.dev/encoding/json#NewEncoder)
 
 `json.Marshal` は `[]byte` を返します。`w.Write(b)` する 2 段構え。
 `json.NewEncoder(w).Encode(v)` は直接 `w` に書きます。1 回のバッファリングで済むので **後者を推奨** します。
@@ -144,7 +144,7 @@ curl -sS -i http://localhost:8080/boom
 
 ## 3.6 補足: `encoding/json/v2` について
 
-Go 1.24 以降、`encoding/json/v2` パッケージが `GOEXPERIMENT=jsonv2` の下で試せます。
+Go 1.24 以降、[`encoding/json/v2`](https://pkg.go.dev/encoding/json/v2) パッケージが `GOEXPERIMENT=jsonv2` の下で試せます。
 API はより明示的で高速になっていますが、**執筆時点（2026-08）ではまだ実験的**で、
 本番投入は時期尚早です。本教材では従来の `encoding/json` を使います。
 

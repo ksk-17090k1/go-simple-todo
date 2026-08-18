@@ -128,7 +128,7 @@ func (r *statusRecorder) Write(b []byte) (int, error) {
 
 ## 8.5 Logging ミドルウェア（slog アクセスログ）
 
-`log/slog` で構造化ログを出します。1 リクエスト＝ 1 行 JSON。
+[`log/slog`](https://pkg.go.dev/log/slog) で構造化ログを出します。1 リクエスト＝ 1 行 JSON。
 
 ```go
 import "log/slog"
@@ -155,8 +155,8 @@ func loggingMiddleware(logger *slog.Logger) Middleware {
 
 ### ポイント
 
-- **`LogAttrs`** を使う。`Info(...)` の可変引数版より **アロケーションが少なく速い**。
-- `slog.String` `slog.Int` などの **`Attr`** で明示的に型付き属性を作る。
+- **[`LogAttrs`](https://pkg.go.dev/log/slog#Logger.LogAttrs)** を使う。`Info(...)` の可変引数版より **アロケーションが少なく速い**。
+- `slog.String` `slog.Int` などの **[`Attr`](https://pkg.go.dev/log/slog#Attr)** で明示的に型付き属性を作る。
 - 出力先は次章（09）で `slog.NewJSONHandler(os.Stdout, ...)` として設定する。
 - `duration` は `time.Duration`。slog では nanoseconds 単位で JSON に出る。
 
@@ -192,7 +192,7 @@ func recoveryMiddleware(logger *slog.Logger) Middleware {
 }
 ```
 
-### `slog.Any` について
+### [`slog.Any`](https://pkg.go.dev/log/slog#Any) について
 
 `rec`（`recover()` の返り値）は `any` 型。`slog.Any("panic", rec)` にすると `slog` 側で
 デフォルトの整形（`%v` 相当）で JSON に載せてくれます。

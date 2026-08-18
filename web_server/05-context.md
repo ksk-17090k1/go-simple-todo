@@ -18,7 +18,7 @@
 - **リクエストごとのタイムアウト**（例: 3 秒以内に応答）を守りたい
 - **リクエストに紐づく ID や認証情報** を関数呼び出しの深いところまで運びたい
 
-これらを **`context.Context`** という 1 個の値でまとめて表現するのが Go の流儀です。
+これらを **[`context.Context`](https://pkg.go.dev/context#Context)** という 1 個の値でまとめて表現するのが Go の流儀です。
 `context.Context` は次の 2 つの側面を持ちます。
 
 1. **キャンセルシグナル** — `ctx.Done()` を監視することで、「もう仕事をやめていい」を検知できる
@@ -37,8 +37,8 @@ ctx := r.Context()
 - クライアントが接続を切ったとき
 - サーバがシャットダウン中で、猶予時間内にリクエストが終わらなかったとき
 
-つまり **`r.Context()` を下流に渡しておくだけで**、クライアント切断時に DB クエリが自動でキャンセルされる、といった挙動を無料で手に入れられます。
-（DB ドライバが `context` を尊重する実装になっている前提。`database/sql` の `QueryContext` などは尊重します。）
+つまり **[`r.Context()`](https://pkg.go.dev/net/http#Request.Context) を下流に渡しておくだけで**、クライアント切断時に DB クエリが自動でキャンセルされる、といった挙動を無料で手に入れられます。
+（DB ドライバが `context` を尊重する実装になっている前提。[`database/sql`](https://pkg.go.dev/database/sql) の [`QueryContext`](https://pkg.go.dev/database/sql#DB.QueryContext) などは尊重します。）
 
 ### やってはいけないパターン
 
@@ -74,7 +74,7 @@ type Store interface {
 
 「context を取らない Store」は将来の DB 差し替えで詰みます。**最初から入れておく**のが正解です。
 
-## 5.3 `context.WithValue` の作法
+## 5.3 [`context.WithValue`](https://pkg.go.dev/context#WithValue) の作法
 
 context には値を載せられます。ミドルウェアで生成した **request ID** をハンドラに運ぶ用途などで使います。
 
@@ -161,7 +161,7 @@ func RequestIDFromContext(ctx context.Context) string {
 
 - **`ctx` は関数の第 1 引数**（第 2 以降にしない）
 - **`ctx` を struct のフィールドに持たない**（1 つの struct が複数リクエストで共有される場合、context が混線する）
-- **`context.TODO()` は「今は決めきれないが後で埋める」の印**。プロダクションコードには残さない
+- **[`context.TODO()`](https://pkg.go.dev/context#TODO) は「今は決めきれないが後で埋める」の印**。プロダクションコードには残さない
 
 ## 次の章
 

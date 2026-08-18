@@ -26,7 +26,7 @@ mux.HandleFunc("DELETE /todos/{id}", deleteHandler)
 
 ### 4.1.2 パスパラメータ
 
-`{name}` で名前付きプレースホルダを書けます。ハンドラ内では `r.PathValue("name")` で取り出します。
+`{name}` で名前付きプレースホルダを書けます。ハンドラ内では [`r.PathValue("name")`](https://pkg.go.dev/net/http#Request.PathValue) で取り出します。
 
 ```go
 mux.HandleFunc("GET /todos/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ mux.HandleFunc("GET /todos/{id}", func(w http.ResponseWriter, r *http.Request) {
 ```
 
 - `{name...}` にするとパスの残り全体（`/foo/{path...}`）にマッチします。今回は使いません。
-- 型変換は自分でやる必要があります（`strconv.ParseInt` など）。
+- 型変換は自分でやる必要があります（[`strconv.ParseInt`](https://pkg.go.dev/strconv#ParseInt) など）。
 
 ### 4.1.3 なぜ「フレームワーク不要」と言えるようになったか
 
@@ -85,7 +85,7 @@ if !ok {
 
 ## 4.3 クエリパラメータ
 
-`?done=true` のようなクエリは `r.URL.Query()` で取り出します。
+`?done=true` のようなクエリは [`r.URL.Query()`](https://pkg.go.dev/net/url#URL.Query) で取り出します。
 
 ```go
 q := r.URL.Query()
@@ -140,9 +140,9 @@ if dec.More() {
 
 3 つのガードが入りました。
 
-- `http.MaxBytesReader` … `n` バイト超えると `Decode` がエラーを返す
-- `dec.DisallowUnknownFields()` … 未知フィールドがあると `Decode` がエラーを返す
-- `dec.More()` … `{...}` の後ろに追加の JSON がぶら下がっていたら弾く
+- [`http.MaxBytesReader`](https://pkg.go.dev/net/http#MaxBytesReader) … `n` バイト超えると `Decode` がエラーを返す
+- [`dec.DisallowUnknownFields()`](https://pkg.go.dev/encoding/json#Decoder.DisallowUnknownFields) … 未知フィールドがあると `Decode` がエラーを返す
+- [`dec.More()`](https://pkg.go.dev/encoding/json#Decoder.More) … `{...}` の後ろに追加の JSON がぶら下がっていたら弾く
 
 ### 4.4.3 ジェネリクスで共通化する
 

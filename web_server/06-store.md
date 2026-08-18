@@ -77,7 +77,7 @@ DB 実装（例: `db.QueryContext(ctx, ...)`）ではこれが必須になりま
 
 ### なぜ `ErrTodoNotFound` を用意するか
 
-- 呼び出し側は `if errors.Is(err, ErrTodoNotFound)` で 404 に変換する
+- 呼び出し側は [`errors.Is(err, ErrTodoNotFound)`](https://pkg.go.dev/errors#Is) で 404 に変換する
 - 「エラー文字列で判定」だとタイポや翻訳で崩壊する
 
 sentinel error のパターンです。将来もっと種類が増えたら struct 型のエラーに拡張してもいいですが、今はこれで十分。
@@ -109,17 +109,17 @@ func NewMemStore() *MemStore {
 }
 ```
 
-### なぜ `sync.RWMutex` か
+### なぜ [`sync.RWMutex`](https://pkg.go.dev/sync#RWMutex) か
 
 `net/http` のサーバは 1 リクエスト＝ 1 goroutine で走ります。
-複数のリクエストが同時に `MemStore.Create` などを呼ぶと、Go の map は **並行アクセスで即クラッシュ** します。
+複数のリクエストが同時に `MemStore.Create` などを呼ぶと、Go の map は **[並行アクセスで即クラッシュ](https://go.dev/doc/faq#atomic_maps)** します。
 
 そこで:
 
 - **書き込み系** (`Create`, `Update`, `Delete`) は `s.mu.Lock()` で排他
 - **読み取り系** (`Get`, `List`) は `s.mu.RLock()` で複数同時読み許可
 
-`sync.Mutex` でも動きますが、読みが多い API では `RWMutex` の方がスループットが出ます。
+[`sync.Mutex`](https://pkg.go.dev/sync#Mutex) でも動きますが、読みが多い API では `RWMutex` の方がスループットが出ます。
 
 ### 各メソッドの実装
 
@@ -200,8 +200,8 @@ func (s *MemStore) Delete(ctx context.Context, id int64) error {
 ### コードの読みどころ
 
 - **`ctx.Err()` を最初にチェック**: すでにキャンセルされたリクエストなら無駄仕事しない。DB 実装では `db.QueryContext(ctx, ...)` が同等のことをやってくれる。
-- **`time.Now().UTC()`**: サーバ時刻は基本 UTC で保存し、表示層で現地時刻に直す。混在するとバグの温床。
-- **`slices.SortFunc` + `cmp.Compare`**: Go 1.21+ のイディオム。`sort.Slice` の後継として推奨。
+- **[`time.Now().UTC()`](https://pkg.go.dev/time#Now)**: サーバ時刻は基本 UTC で保存し、表示層で現地時刻に直す。混在するとバグの温床。
+- **[`slices.SortFunc`](https://pkg.go.dev/slices#SortFunc) + [`cmp.Compare`](https://pkg.go.dev/cmp#Compare)**: Go 1.21+ のイディオム。[`sort.Slice`](https://pkg.go.dev/sort#Slice) の後継として推奨。
 - **`nextID`**: 単調増加。in-memory 実装なのでプロセス再起動で 1 に戻る（教材前提）。本番では DB のシーケンス or UUID に置き換える。
 
 ## 6.5 Store をハンドラから使う準備

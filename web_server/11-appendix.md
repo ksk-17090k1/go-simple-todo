@@ -47,7 +47,7 @@
 
 - 本教材では **HTTPS を扱っていません**。
 - 現実世界のプロダクションでは **ロードバランサや ingress で TLS を終端** し、backend の Go サーバは平文 HTTP で動かす構成が主流です。Let's Encrypt を自前でハンドリングする必要はまずない。
-- Go 単体で HTTPS を喋りたい場合は `srv.ListenAndServeTLS(certFile, keyFile)`。
+- Go 単体で HTTPS を喋りたい場合は [`srv.ListenAndServeTLS(certFile, keyFile)`](https://pkg.go.dev/net/http#Server.ListenAndServeTLS)。
 
 ## 11.6 パッケージ分割 (`internal/`)
 
@@ -62,7 +62,7 @@ todoapi/
     └── server/     (Handler, routes, middleware)
 ```
 
-のように切ることが多いです。`internal/` に置くと **モジュール外部から import できない** ので、公開 API を絞る仕組みとして機能します。
+のように切ることが多いです。[`internal/`](https://pkg.go.dev/cmd/go#hdr-Internal_Directories) に置くと **モジュール外部から import できない** ので、公開 API を絞る仕組みとして機能します。
 
 コード量が数千行を超えたら分割検討、それ未満ならフラットで OK、が経験則。
 
@@ -98,9 +98,9 @@ if err != nil { ... }
 defer resp.Body.Close()
 ```
 
-**必ず `http.NewRequestWithContext`** を使い、`http.Client` に **タイムアウト** を設定する。
+**必ず [`http.NewRequestWithContext`](https://pkg.go.dev/net/http#NewRequestWithContext)** を使い、[`http.Client`](https://pkg.go.dev/net/http#Client) に **タイムアウト** を設定する。
 `resp.Body` は必ず `Close` する（`defer` すぐ）。
-`http.Get(...)` のようなグローバル関数は timeout がないので **本番では使わない**。
+[`http.Get(...)`](https://pkg.go.dev/net/http#Get) のようなグローバル関数は timeout がないので **本番では使わない**。
 
 ## 11.10 参考リンク
 
