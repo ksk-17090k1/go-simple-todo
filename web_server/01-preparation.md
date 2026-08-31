@@ -51,7 +51,7 @@ go 1.22
 | `todo.go`             | ドメイン型 `Todo` の定義                                           | 06         |
 | `store.go`            | `Store` インターフェイスと in-memory 実装                          | 06         |
 | `httpx.go`            | `writeJSON` / `writeError` / context ヘルパー                     | 03, 05     |
-| `handler.go`          | `Handler` 構造体と CRUD メソッド                                   | 07         |
+| `handler.go`          | `TodoHandler` 構造体と CRUD メソッド                                   | 07         |
 | `routes.go`           | ルーティング登録                                                   | 04, 07     |
 | `middleware.go`       | request ID / logging / recovery ミドルウェア                       | 08         |
 | `handler_test.go`     | `httptest` を使ったハンドラテスト                                  | 10         |

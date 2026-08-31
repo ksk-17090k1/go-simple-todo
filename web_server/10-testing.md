@@ -4,7 +4,7 @@
 
 - `net/http/httptest` を使ってハンドラを単体テストする
 - テーブル駆動テストで入力ケースを網羅する
-- Store と Handler を **別々に** テストする理由を理解する
+- Store と TodoHandler を **別々に** テストする理由を理解する
 
 ## 10.1 なぜテストが書きやすいのか
 
@@ -40,7 +40,7 @@ func newTestMux(t *testing.T) (*http.ServeMux, Store) {
 	t.Helper()
 	store := NewMemStore()
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil)) // テスト出力を汚さない
-	h := NewHandler(store, logger)
+	h := NewTodoHandler(store, logger)
 	mux := http.NewServeMux()
 	registerRoutes(mux, h)
 	return mux, store
@@ -216,7 +216,7 @@ func TestMethodNotAllowed(t *testing.T) {
 
 ## 10.8 Store 単体テスト
 
-Handler 経由でなく Store を直接テストします。
+TodoHandler 経由でなく Store を直接テストします。
 
 ```go
 // store_test.go
@@ -255,7 +255,7 @@ func TestMemStore_ContextCanceled(t *testing.T) {
 
 ### なぜ Store を単体で持つか
 
-- **Handler と Store を切り分けてバグを切り分ける**: HTTP 経由のテストが落ちたとき、Store 側の問題か Handler 側の問題か、ログを見なくても分かる
+- **TodoHandler と Store を切り分けてバグを切り分ける**: HTTP 経由のテストが落ちたとき、Store 側の問題か TodoHandler 側の問題か、ログを見なくても分かる
 - **速い**: HTTP レイヤーの往復コストがない
 - **`ctx.Err()` 早期リターンの検証**が HTTP テストではやりにくい（クライアント側で切断を再現するのが手間）
 

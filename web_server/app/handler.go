@@ -9,16 +9,16 @@ import (
 	"strings"
 )
 
-// Handler は各 HTTP ハンドラをメソッドとして持つ構造体。
+// TodoHandler は各 HTTP ハンドラをメソッドとして持つ構造体。
 // 必要な依存（Store, Logger）を struct のフィールドで受け取る＝依存性注入。
 // これにより、テスト時は fake の Store と io.Discard に流す logger を渡せる。
-type Handler struct {
+type TodoHandler struct {
 	store  Store
 	logger *slog.Logger
 }
 
-func NewHandler(store Store, logger *slog.Logger) *Handler {
-	return &Handler{store: store, logger: logger}
+func NewTodoHandler(store Store, logger *slog.Logger) *TodoHandler {
+	return &TodoHandler{store: store, logger: logger}
 }
 
 // リクエストボディの最大サイズ（1 MiB）。
@@ -31,7 +31,7 @@ type createTodoReq struct {
 	Title string `json:"title"`
 }
 
-func (h *Handler) CreateTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	req, ok := decodeJSON[createTodoReq](w, r)
 	if !ok {
 		return
@@ -51,7 +51,7 @@ func (h *Handler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 // --- List ---
 
-func (h *Handler) ListTodos(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) ListTodos(w http.ResponseWriter, r *http.Request) {
 	todos, err := h.store.List(r.Context())
 	if err != nil {
 		h.serverError(w, r, "list todos", err)
@@ -66,7 +66,7 @@ func (h *Handler) ListTodos(w http.ResponseWriter, r *http.Request) {
 
 // --- Get ---
 
-func (h *Handler) GetTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	id, ok := parsePathID(w, r)
 	if !ok {
 		return
@@ -90,7 +90,7 @@ type updateTodoReq struct {
 	Done  bool   `json:"done"`
 }
 
-func (h *Handler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	id, ok := parsePathID(w, r)
 	if !ok {
 		return
@@ -118,7 +118,7 @@ func (h *Handler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 
 // --- Delete ---
 
-func (h *Handler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	id, ok := parsePathID(w, r)
 	if !ok {
 		return
@@ -168,7 +168,7 @@ func decodeJSON[T any](w http.ResponseWriter, r *http.Request) (T, bool) {
 }
 
 // serverError は 500 系エラーを共通のフォーマットで返す。ログには request ID を入れる。
-func (h *Handler) serverError(w http.ResponseWriter, r *http.Request, op string, err error) {
+func (h *TodoHandler) serverError(w http.ResponseWriter, r *http.Request, op string, err error) {
 	h.logger.LogAttrs(r.Context(), slog.LevelError, "handler error",
 		slog.String("op", op),
 		slog.String("err", err.Error()),

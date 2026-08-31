@@ -2,11 +2,11 @@
 
 ## この章のゴール
 
-- `Handler` 構造体に依存を注入する形を身につける
+- `TodoHandler` 構造体に依存を注入する形を身につける
 - CRUD 5 本を書き切る
 - ステータスコードとレスポンス形状の意図を意識する
 
-## 7.1 なぜ `Handler` 構造体を作るのか
+## 7.1 なぜ `TodoHandler` 構造体を作るのか
 
 前章までのハンドラは関数リテラルで書いていました。次のように書きたくなります。
 
@@ -25,17 +25,17 @@ package main
 
 import "log/slog"
 
-type Handler struct {
+type TodoHandler struct {
 	store  Store
 	logger *slog.Logger
 }
 
-func NewHandler(store Store, logger *slog.Logger) *Handler {
-	return &Handler{store: store, logger: logger}
+func NewTodoHandler(store Store, logger *slog.Logger) *TodoHandler {
+	return &TodoHandler{store: store, logger: logger}
 }
 ```
 
-各エンドポイントは `*Handler` のメソッドにします。ルーティング側では **メソッド値** を渡します。
+各エンドポイントは `*TodoHandler` のメソッドにします。ルーティング側では **メソッド値** を渡します。
 
 ```go
 mux.HandleFunc("POST /todos", h.CreateTodo)
@@ -86,7 +86,7 @@ func decodeJSON[T any](w http.ResponseWriter, r *http.Request) (T, bool) {
 }
 
 // serverError は 500 系エラーを共通のフォーマットで返す。ログには request ID を入れる。
-func (h *Handler) serverError(w http.ResponseWriter, r *http.Request, op string, err error) {
+func (h *TodoHandler) serverError(w http.ResponseWriter, r *http.Request, op string, err error) {
 	h.logger.LogAttrs(r.Context(), slog.LevelError, "handler error",
 		slog.String("op", op),
 		slog.String("err", err.Error()),
@@ -106,7 +106,7 @@ type createTodoReq struct {
 	Title string `json:"title"`
 }
 
-func (h *Handler) CreateTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	req, ok := decodeJSON[createTodoReq](w, r)
 	if !ok {
 		return
@@ -132,7 +132,7 @@ func (h *Handler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 ## 7.4 List
 
 ```go
-func (h *Handler) ListTodos(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) ListTodos(w http.ResponseWriter, r *http.Request) {
 	todos, err := h.store.List(r.Context())
 	if err != nil {
 		h.serverError(w, r, "list todos", err)
@@ -160,7 +160,7 @@ Cannot read properties of null (reading 'length')
 ## 7.5 Get
 
 ```go
-func (h *Handler) GetTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	id, ok := parsePathID(w, r)
 	if !ok {
 		return
@@ -189,7 +189,7 @@ type updateTodoReq struct {
 	Done  bool   `json:"done"`
 }
 
-func (h *Handler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	id, ok := parsePathID(w, r)
 	if !ok {
 		return
@@ -223,7 +223,7 @@ func (h *Handler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 ## 7.7 Delete
 
 ```go
-func (h *Handler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	id, ok := parsePathID(w, r)
 	if !ok {
 		return
@@ -253,7 +253,7 @@ package main
 
 import "net/http"
 
-func registerRoutes(mux *http.ServeMux, h *Handler) {
+func registerRoutes(mux *http.ServeMux, h *TodoHandler) {
 	mux.HandleFunc("POST /todos", h.CreateTodo)
 	mux.HandleFunc("GET /todos", h.ListTodos)
 	mux.HandleFunc("GET /todos/{id}", h.GetTodo)

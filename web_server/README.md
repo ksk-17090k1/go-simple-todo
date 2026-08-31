@@ -73,7 +73,7 @@ web_server/
 | 04  | [ルーティングとリクエスト解析](./04-routing-and-request.md) | Go 1.22+ の `ServeMux`、`PathValue`、`json.Decoder`               |
 | 05  | [context の基礎](./05-context.md)      | `context.Context` の伝播、キャンセル、`WithValue` の作法                      |
 | 06  | [ドメインとストレージ層](./06-store.md)| `Todo` 型、`Store` interface、in-memory 実装、`sync.RWMutex`                |
-| 07  | [ハンドラの実装](./07-handlers.md)     | `Handler` 構造体で依存注入、CRUD 5 本                                       |
+| 07  | [ハンドラの実装](./07-handlers.md)     | `TodoHandler` 構造体で依存注入、CRUD 5 本                                       |
 | 08  | [ミドルウェア](./08-middleware.md)     | ミドルウェアのパターン、request ID、`slog` アクセスログ、panic recovery       |
 | 09  | [サーバ設定と graceful shutdown](./09-server-and-shutdown.md) | `http.Server` のタイムアウト、`slog` セットアップ、`Server.Shutdown`         |
 | 10  | [テスト](./10-testing.md)              | `httptest.NewRequest` / `NewRecorder`、テーブル駆動テスト                    |

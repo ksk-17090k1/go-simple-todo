@@ -34,7 +34,7 @@ func run() error {
 
 	// 2) 依存を組み立てる。
 	store := NewMemStore()
-	handler := NewHandler(store, logger)
+	handler := NewTodoHandler(store, logger)
 
 	// 3) ルーティング。
 	mux := http.NewServeMux()

@@ -59,7 +59,7 @@ todoapi/
 └── internal/
     ├── todo/       (Todo 型, Store, MemStore)
     ├── httpx/      (writeJSON, ctx helpers)
-    └── server/     (Handler, routes, middleware)
+    └── server/     (TodoHandler, routes, middleware)
 ```
 
 のように切ることが多いです。[`internal/`](https://pkg.go.dev/cmd/go#hdr-Internal_Directories) に置くと **モジュール外部から import できない** ので、公開 API を絞る仕組みとして機能します。

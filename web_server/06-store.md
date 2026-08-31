@@ -15,10 +15,10 @@
 そこで **抽象** を挟みます。
 
 ```
-Handler ── (Store interface) ── MemStore / SQLStore / RedisStore / ...
+TodoHandler ── (Store interface) ── MemStore / SQLStore / RedisStore / ...
 ```
 
-Handler は `Store` インターフェイスに対して喋る。実装は本番と開発で入れ替える。
+TodoHandler は `Store` インターフェイスに対して喋る。実装は本番と開発で入れ替える。
 このために **必要最小限のメソッド** を interface に切り出します。
 
 ## 6.2 `Todo` 型
@@ -206,19 +206,19 @@ func (s *MemStore) Delete(ctx context.Context, id int64) error {
 
 ## 6.5 Store をハンドラから使う準備
 
-次章で `Handler` を書きますが、そこでは
+次章で `TodoHandler` を書きますが、そこでは
 
 ```go
 h.store.Create(r.Context(), title)
 ```
 
-のように呼びます。**`Store` インターフェイスに対して呼ぶ**ので、`Handler` は `MemStore` の実在を知りません。
+のように呼びます。**`Store` インターフェイスに対して呼ぶ**ので、`TodoHandler` は `MemStore` の実在を知りません。
 
 `main.go` では
 
 ```go
 store := NewMemStore()          // ← ここで具体実装を注入
-handler := NewHandler(store, logger)
+handler := NewTodoHandler(store, logger)
 ```
 
 とすることで、テストでは `MemStore` を、将来は `SQLStore` を渡せる形になります。

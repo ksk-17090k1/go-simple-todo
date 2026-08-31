@@ -44,7 +44,7 @@ ctx := r.Context()
 
 ```go
 // BAD: ctx を無視して context.Background() を新規に作る
-func (h *Handler) GetTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
     t, err := h.store.Get(context.Background(), id) // ← 切断されてもキャンセルされない
     // ...
 }
@@ -56,7 +56,7 @@ func (h *Handler) GetTodo(w http.ResponseWriter, r *http.Request) {
 ### 良いパターン
 
 ```go
-func (h *Handler) GetTodo(w http.ResponseWriter, r *http.Request) {
+func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
     t, err := h.store.Get(r.Context(), id) // ← 切断されたら Get 側でキャンセル可能
     // ...
 }

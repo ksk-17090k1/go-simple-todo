@@ -12,13 +12,13 @@ import (
 	"testing"
 )
 
-// newTestMux は各テストで使う「Handler をセットしただけの ServeMux」を返す。
+// newTestMux は各テストで使う「TodoHandler をセットしただけの ServeMux」を返す。
 // logger は捨てる（テスト出力を汚さないため）。
 func newTestMux(t *testing.T) (*http.ServeMux, Store) {
 	t.Helper()
 	store := NewMemStore()
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
-	h := NewHandler(store, logger)
+	h := NewTodoHandler(store, logger)
 	mux := http.NewServeMux()
 	registerRoutes(mux, h)
 	return mux, store
