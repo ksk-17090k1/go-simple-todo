@@ -169,10 +169,10 @@ func decodeJSON[T any](w http.ResponseWriter, r *http.Request) (T, bool) {
 
 // serverError は 500 系エラーを共通のフォーマットで返す。ログには request ID を入れる。
 func (h *TodoHandler) serverError(w http.ResponseWriter, r *http.Request, op string, err error) {
-	h.logger.LogAttrs(r.Context(), slog.LevelError, "handler error",
-		slog.String("op", op),
-		slog.String("err", err.Error()),
-		slog.String("request_id", RequestIDFromContext(r.Context())),
+	h.logger.ErrorContext(r.Context(), "handler error",
+		"op", op,
+		"err", err.Error(),
+		"request_id", RequestIDFromContext(r.Context()),
 	)
 	writeError(w, http.StatusInternalServerError, "internal_error", "internal server error")
 }

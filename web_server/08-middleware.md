@@ -139,14 +139,14 @@ func loggingMiddleware(logger *slog.Logger) Middleware {
 			start := time.Now()
 			rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 			next.ServeHTTP(rec, r)
-			logger.LogAttrs(r.Context(), slog.LevelInfo, "http request",
-				slog.String("method", r.Method),
-				slog.String("path", r.URL.Path),
-				slog.Int("status", rec.status),
-				slog.Int("bytes", rec.bytes),
-				slog.Duration("duration", time.Since(start)),
-				slog.String("remote", r.RemoteAddr),
-				slog.String("request_id", RequestIDFromContext(r.Context())),
+			logger.InfoContext(r.Context(), "http request",
+				"method", r.Method,
+				"path", r.URL.Path,
+				"status", rec.status,
+				"bytes", rec.bytes,
+				"duration", time.Since(start),
+				"remote", r.RemoteAddr,
+				"request_id", RequestIDFromContext(r.Context()),
 			)
 		})
 	}
@@ -155,8 +155,9 @@ func loggingMiddleware(logger *slog.Logger) Middleware {
 
 ### ポイント
 
-- **[`LogAttrs`](https://pkg.go.dev/log/slog#Logger.LogAttrs)** を使う。`Info(...)` の可変引数版より **アロケーションが少なく速い**。
-- `slog.String` `slog.Int` などの **[`Attr`](https://pkg.go.dev/log/slog#Attr)** で明示的に型付き属性を作る。
+- **[`InfoContext`](https://pkg.go.dev/log/slog#Logger.InfoContext)** を使う。`Info(...)` と違い `context.Context` を渡せるので、リクエストスコープの情報（トレース ID 等）をログハンドラが利用できる。
+- 属性は `"key", value` の **交互ペア** で渡す。数が合わない書き間違いは `go vet` が検出してくれる。
+- より厳密・低アロケーションな **[`LogAttrs`](https://pkg.go.dev/log/slog#Logger.LogAttrs)**（`slog.String` 等の型付き [`Attr`](https://pkg.go.dev/log/slog#Attr) を渡す）もある。ホットパスや共通ヘルパーではこちらを選ぶチームも多い。
 - 出力先は次章（09）で `slog.NewJSONHandler(os.Stdout, ...)` として設定する。
 - `duration` は `time.Duration`。slog では nanoseconds 単位で JSON に出る。
 
@@ -178,10 +179,10 @@ func recoveryMiddleware(logger *slog.Logger) Middleware {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
 				if rec := recover(); rec != nil {
-					logger.LogAttrs(r.Context(), slog.LevelError, "panic recovered",
-						slog.Any("panic", rec),
-						slog.String("stack", string(debug.Stack())),
-						slog.String("request_id", RequestIDFromContext(r.Context())),
+					logger.ErrorContext(r.Context(), "panic recovered",
+						"panic", rec,
+						"stack", string(debug.Stack()),
+						"request_id", RequestIDFromContext(r.Context()),
 					)
 					writeError(w, http.StatusInternalServerError, "internal_error", "internal server error")
 				}
@@ -192,9 +193,10 @@ func recoveryMiddleware(logger *slog.Logger) Middleware {
 }
 ```
 
-### [`slog.Any`](https://pkg.go.dev/log/slog#Any) について
+### `any` 型の値をそのまま渡せる理由
 
-`rec`（`recover()` の返り値）は `any` 型。`slog.Any("panic", rec)` にすると `slog` 側で
+`rec`（`recover()` の返り値）は `any` 型。軽い記法では `"panic", rec` とそのまま渡せば、
+`slog` 内部で [`slog.Any`](https://pkg.go.dev/log/slog#Any) 相当として扱われ、
 デフォルトの整形（`%v` 相当）で JSON に載せてくれます。
 
 ## 8.7 並び順の意味
