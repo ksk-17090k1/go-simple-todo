@@ -179,6 +179,15 @@ func recoveryMiddleware(logger *slog.Logger) Middleware {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
 				if rec := recover(); rec != nil {
+
+                    // ErrAbortHandler はクライアント切断などでレスポンス処理を打ち切るために
+                    // net/http が使う特別な panic 値。サーバー側の異常ではないので、
+                    // エラーログや 500 応答にはせず、net/http 本体に処理を任せるために投げ直す。
+                    // 投げ直された panic は net/http 本体のrecoverで処理される。
+                    if rec == http.ErrAbortHandler {
+                        panic(rec)
+                    }
+
 					logger.ErrorContext(r.Context(), "panic recovered",
 						"panic", rec,
 						"stack", string(debug.Stack()),
